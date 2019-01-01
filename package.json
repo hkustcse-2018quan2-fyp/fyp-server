@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/hkustcse-2018quan2-fyp/fyp-server/issues"
   },
-  "homepage": "https://github.com/hkustcse-2018quan2-fyp/fyp-server#readme"
+  "homepage": "https://github.com/hkustcse-2018quan2-fyp/fyp-server#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mongodb": "^3.1.10"
+  }
 }
