@@ -4,10 +4,15 @@ const mongoose = require('mongoose'),
 const usersSchema = new Schema({
     username: String,
     password: String,
+    firstname: String,
+    lastname: String,
+    middlename: String,
+    school: String,
+    joinedyear: String,
     email: String,
     isTeacher: Boolean
 });
 
-const User = mongoose.model('Users', usersSchema);
+const User = mongoose.model('User', usersSchema);
 
 module.exports = User;
