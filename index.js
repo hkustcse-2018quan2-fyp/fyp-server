@@ -1,28 +1,46 @@
-const express = require('express'),
-    dbURI = 'mongodb://localhost/fypdb',
-    mongoose = require('mongoose');
+var http = require('http');
+var express = require('express');
+var session = require('express-session');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var MongoStore = require('connect-mongo')(session);
 
-// call express to create app
-// and obtain APIs
-const app = express();
+var app = express();
 
-// connect to database with Mongoose
-mongoose.connect(dbURI, err => {
-    if (err) throw err;
-    console.log('Connected to database.');
-})
+app.locals.pretty = true;
+app.set('port', process.env.PORT || 3000);
+app.set('views', __dirname + '/server/views');
+app.set('view engine', 'pug');
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(require('stylus').middleware({ src: __dirname + '/public' }));
+app.use(express.static(__dirname + '/public'));
 
-var router = require('./api/api.js');
-app.use('/api', router);
+// build mongo database connection url //
 
-app.get('/', (req, res) => {
-    res.send('homepage');
-});
+process.env.DB_HOST = process.env.DB_HOST || 'localhost'
+process.env.DB_PORT = process.env.DB_PORT || 27017;
+process.env.DB_NAME = process.env.DB_NAME || 'node-login';
 
-app.get('*', (req, res) => {
-    res.send('Fallback');
-});
+if (app.get('env') != 'live'){
+	process.env.DB_URL = 'mongodb://'+process.env.DB_HOST+':'+process.env.DB_PORT;
+}	else {
+// prepend url with authentication credentials // 
+	process.env.DB_URL = 'mongodb://'+process.env.DB_USER+':'+process.env.DB_PASS+'@'+process.env.DB_HOST+':'+process.env.DB_PORT;
+}
 
-app.listen(8080, () => {
-    console.log('Server running on port 8080.');
+app.use(session({
+	secret: 'faeb4453e5d14fe6f6d04637f78077c76c73d1b4',
+	proxy: true,
+	resave: true,
+	saveUninitialized: true,
+	store: new MongoStore({ url: process.env.DB_URL })
+	})
+);
+
+require('./server/routes')(app);
+
+http.createServer(app).listen(app.get('port'), function(){
+	console.log('Express server listening on port ' + app.get('port'));
 });
